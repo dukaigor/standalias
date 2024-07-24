@@ -1,0 +1,450 @@
+<html><head><base href="https://websim.ru/alias/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ALIAS - Jocul de explicare a cuvintelor Online</title>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #F2F2F7;
+    color: #000000;
+    line-height: 1.5;
+  }
+  
+  .game-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h1, h2 {
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .word-display {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    height: 40px;
+    color: #000000;
+  }
+  
+  .timer {
+    font-size: 48px;
+    font-weight: 300;
+    text-align: center;
+    margin: 20px 0;
+    color: #FF3B30;
+  }
+  
+  button {
+    display: block;
+    width: 100%;
+    padding: 12px 20px;
+    margin: 10px 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #FFFFFF;
+    background-color: #007AFF;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  button:active {
+    background-color: #004080;
+  }
+  
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 17px;
+    border: 1px solid #C7C7CC;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+  }
+  
+  textarea {
+    height: 100px;
+    resize: vertical;
+  }
+  
+  .team-scores {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  
+  .team-scores div {
+    text-align: center;
+    margin: 10px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .team-scores span {
+    font-weight: bold;
+    font-size: 24px;
+    color: #007AFF;
+  }
+  
+  #currentTeamScore {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+    color: #007AFF;
+  }
+  
+  #nextRoundButton {
+    background-color: #34C759;
+  }
+  
+  #nextRoundButton:hover {
+    background-color: #2AAA4A;
+  }
+  
+  #backToMainMenu {
+    background-color: #FF3B30;
+  }
+  
+  #backToMainMenu:hover {
+    background-color: #D63125;
+  }
+  
+  #roomList {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  #roomList li {
+    background-color: #FFFFFF;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  #roomList li:hover {
+    background-color: #F2F2F7;
+  }
+  
+  @media (max-width: 600px) {
+    .game-container {
+      padding: 10px;
+    }
+    
+    .word-display {
+      font-size: 28px;
+    }
+    
+    .timer {
+      font-size: 40px;
+    }
+    
+    #currentTeamScore {
+      font-size: 30px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>ALIAS Online</h1>
+    <div id="loginScreen">
+      <h2>Intrare în joc</h2>
+      <input type="text" id="playerName" placeholder="Introduceți numele dvs.">
+      <button id="createRoomButton">Creează o cameră pentru a juca împreună</button>
+      <button id="joinRoomButton">Alătură-te unei camere</button>
+    </div>
+    <div id="roomListScreen" style="display:none;">
+      <h2>Camere disponibile</h2>
+      <ul id="roomList"></ul>
+      <button id="backToLoginButton">Înapoi</button>
+    </div>
+    <div id="setup" style="display:none;">
+      <h2>Configurare cameră</h2>
+      <div id="teamInputs">
+        <input type="text" placeholder="Nume echipa 1">
+        <input type="text" placeholder="Nume echipa 2">
+      </div>
+      <button id="addTeamButton">Adaugă echipă</button>
+      <h2>Adăugați cuvinte personalizate</h2>
+      <textarea id="customWords" placeholder="Introduceți cuvintele separate prin virgulă"></textarea>
+      <button id="startSetup">Începe jocul</button>
+      <button id="backToMainMenu">Înapoi la meniul principal</button>
+    </div>
+    <div id="waitingRoom" style="display:none;">
+      <h2>Așteptare jucători</h2>
+      <div id="playerList"></div>
+      <button id="startGameButton" style="display:none;">Începe jocul</button>
+    </div>
+    <div id="gameArea" style="display:none;">
+      <div class="word-display" id="wordDisplay"></div>
+      <div class="timer" id="timer">5</div>
+      <button id="nextButton">Următorul cuvânt</button>
+      <button id="correctButton">Corect</button>
+      <button id="skipButton">Omite</button>
+      <div id="currentTeamScore"></div>
+      <div class="team-scores" id="teamScores"></div>
+      <button id="nextRoundButton">Începe runda următoare</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+  <script>
+    const socket = io('https://websim.ru/alias');
+    let playerName = '';
+    let roomId = '';
+    let isHost = false;
+
+    // DOM elements
+    const loginScreen = document.getElementById('loginScreen');
+    const roomListScreen = document.getElementById('roomListScreen');
+    const setup = document.getElementById('setup');
+    const waitingRoom = document.getElementById('waitingRoom');
+    const gameArea = document.getElementById('gameArea');
+    const playerNameInput = document.getElementById('playerName');
+    const createRoomButton = document.getElementById('createRoomButton');
+    const joinRoomButton = document.getElementById('joinRoomButton');
+    const backToLoginButton = document.getElementById('backToLoginButton');
+    const roomList = document.getElementById('roomList');
+    const playerList = document.getElementById('playerList');
+    const startGameButton = document.getElementById('startGameButton');
+    const backToMainMenuButton = document.getElementById('backToMainMenu');
+
+    createRoomButton.addEventListener('click', createRoom);
+    joinRoomButton.addEventListener('click', showRoomList);
+    backToLoginButton.addEventListener('click', () => {
+      roomListScreen.style.display = 'none';
+      loginScreen.style.display = 'block';
+    });
+    backToMainMenuButton.addEventListener('click', () => {
+      setup.style.display = 'none';
+      loginScreen.style.display = 'block';
+      isHost = false;
+      socket.emit('leaveRoom', roomId);
+    });
+
+    function createRoom() {
+      playerName = playerNameInput.value.trim();
+      if (playerName) {
+        socket.emit('createRoom', playerName);
+        isHost = true;
+      } else {
+        alert('Vă rugăm să introduceți un nume de jucător.');
+      }
+    }
+
+    function showRoomList() {
+      playerName = playerNameInput.value.trim();
+      if (playerName) {
+        socket.emit('getRooms');
+        loginScreen.style.display = 'none';
+        roomListScreen.style.display = 'block';
+      } else {
+        alert('Vă rugăm să introduceți un nume de jucător.');
+      }
+    }
+
+    function joinRoom(roomId) {
+      socket.emit('joinRoom', { roomId, playerName });
+    }
+
+    socket.on('roomCreated', (newRoomId) => {
+      roomId = newRoomId;
+      loginScreen.style.display = 'none';
+      setup.style.display = 'block';
+    });
+
+    socket.on('roomList', (rooms) => {
+      roomList.innerHTML = '';
+      rooms.forEach(room => {
+        const li = document.createElement('li');
+        li.textContent = `Camera ${room}`;
+        li.onclick = () => joinRoom(room);
+        roomList.appendChild(li);
+      });
+    });
+
+    socket.on('joinedRoom', (roomData) => {
+      roomId = roomData.roomId;
+      roomListScreen.style.display = 'none';
+      waitingRoom.style.display = 'block';
+      updatePlayerList(roomData.players);
+    });
+
+    socket.on('playerJoined', (players) => {
+      updatePlayerList(players);
+    });
+
+    function updatePlayerList(players) {
+      playerList.innerHTML = '';
+      players.forEach(player => {
+        const div = document.createElement('div');
+        div.textContent = player;
+        playerList.appendChild(div);
+      });
+
+      if (isHost) {
+        startGameButton.style.display = 'block';
+        startGameButton.onclick = startGame;
+      }
+    }
+
+    let words = ['măr', 'calculator', 'carte', 'telefon', 'soare', 'mare', 'muzică', 'copac', 'mașină', 'pisică'];
+    let teams = [];
+    let currentWord = '';
+    let currentTeamIndex = 0;
+    let timer;
+    let timeLeft = 5;
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const timerDisplay = document.getElementById('timer');
+    const nextButton = document.getElementById('nextButton');
+    const correctButton = document.getElementById('correctButton');
+    const skipButton = document.getElementById('skipButton');
+    const teamScores = document.getElementById('teamScores');
+    const startSetupButton = document.getElementById('startSetup');
+    const addTeamButton = document.getElementById('addTeamButton');
+    const teamInputs = document.getElementById('teamInputs');
+    const currentTeamScore = document.getElementById('currentTeamScore');
+    const nextRoundButton = document.getElementById('nextRoundButton');
+
+    startSetupButton.addEventListener('click', setupGame);
+    nextButton.addEventListener('click', nextWord);
+    correctButton.addEventListener('click', correctWord);
+    skipButton.addEventListener('click', skipWord);
+    addTeamButton.addEventListener('click', addTeamInput);
+    nextRoundButton.addEventListener('click', startNextRound);
+
+    function addTeamInput() {
+      const newInput = document.createElement('input');
+      newInput.type = 'text';
+      newInput.placeholder = `Nume echipa ${teamInputs.children.length + 1}`;
+      teamInputs.appendChild(newInput);
+    }
+
+    function setupGame() {
+      teams = Array.from(teamInputs.children).map((input, index) => ({
+        name: input.value || `Echipa ${index + 1}`,
+        score: 0
+      }));
+
+      const customWords = document.getElementById('customWords').value;
+      if (customWords) {
+        words = customWords.split(',').map(word => word.trim());
+      }
+
+      socket.emit('setupGame', { roomId, teams, words });
+    }
+
+    function startGame() {
+      socket.emit('startGame', roomId);
+    }
+
+    socket.on('gameStarted', (gameData) => {
+      teams = gameData.teams;
+      words = gameData.words;
+      setup.style.display = 'none';
+      waitingRoom.style.display = 'none';
+      gameArea.style.display = 'block';
+      updateTeamScores();
+      nextWord();
+      startTimer();
+      updateCurrentTeamScore();
+    });
+
+    function updateTeamScores() {
+      teamScores.innerHTML = teams.map(team => 
+        `<div>${team.name}: <span>${team.score}</span></div>`
+      ).join('');
+    }
+
+    function updateCurrentTeamScore() {
+      currentTeamScore.textContent = `${teams[currentTeamIndex].name}: ${teams[currentTeamIndex].score}`;
+    }
+
+    function nextWord() {
+      socket.emit('nextWord', roomId);
+    }
+
+    socket.on('newWord', (word) => {
+      currentWord = word;
+      wordDisplay.textContent = currentWord;
+    });
+
+    function correctWord() {
+      socket.emit('correctWord', roomId);
+    }
+
+    socket.on('wordGuessed', (updatedTeams) => {
+      teams = updatedTeams;
+      updateTeamScores();
+      updateCurrentTeamScore();
+      nextWord();
+    });
+
+    function skipWord() {
+      nextWord();
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 5;
+      timerDisplay.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft === 0) {
+          clearInterval(timer);
+          endTurn();
+        }
+      }, 1000);
+    }
+
+    function endTurn() {
+      socket.emit('endTurn', roomId);
+    }
+
+    socket.on('turnEnded', () => {
+      nextRoundButton.style.display = 'block';
+      nextButton.disabled = true;
+      correctButton.disabled = true;
+      skipButton.disabled = true;
+    });
+
+    function startNextRound() {
+      socket.emit('startNextRound', roomId);
+    }
+
+    socket.on('nextRoundStarted', (nextTeamIndex) => {
+      currentTeamIndex = nextTeamIndex;
+      updateCurrentTeamScore();
+      startTimer();
+      nextWord();
+      nextRoundButton.style.display = 'none';
+      nextButton.disabled = false;
+      correctButton.disabled = false;
+      skipButton.disabled = false;
+    });
+  </script>
+</body></html>
