@@ -11,7 +11,7 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
 
-        switch(data.type) {
+        switch (data.type) {
             case 'create-room':
                 const roomId = Math.random().toString(36).substr(2, 9);
                 rooms[roomId] = [ws];
@@ -29,7 +29,7 @@ wss.on('connection', (ws) => {
 
             case 'new-word':
                 rooms[data.roomId].forEach(client => {
-                    if (client !== ws) {
+                    if (client !== ws && client.readyState === WebSocket.OPEN) {
                         client.send(JSON.stringify({ type: 'new-word', word: data.word }));
                     }
                 });
@@ -37,7 +37,7 @@ wss.on('connection', (ws) => {
 
             case 'update-score':
                 rooms[data.roomId].forEach(client => {
-                    if (client !== ws) {
+                    if (client !== ws && client.readyState === WebSocket.OPEN) {
                         client.send(JSON.stringify({ type: 'update-score', scores: data.scores }));
                     }
                 });
@@ -61,6 +61,6 @@ wss.on('connection', (ws) => {
 
 app.use(express.static('public'));
 
-server.listen(8080, () => {
-    console.log('Server is listening on port 8080');
+server.listen(3000, () => {
+    console.log('Server is listening on port 3000');
 });
