@@ -55,7 +55,7 @@
         let roomId;
 
         document.getElementById('create-room').addEventListener('click', () => {
-            ws = new WebSocket('ws://localhost:8080');
+            ws = new WebSocket('ws://localhost:3000');
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: 'create-room' }));
             };
@@ -74,7 +74,7 @@
 
         document.getElementById('join-room').addEventListener('click', () => {
             roomId = document.getElementById('room-id').value;
-            ws = new WebSocket('ws://localhost:8080');
+            ws = new WebSocket('ws://localhost:3000');
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: 'join-room', roomId }));
             };
