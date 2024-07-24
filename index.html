@@ -9,6 +9,7 @@
     --ios-dark-gray: #8E8E93;
     --ios-green: #34C759;
     --ios-red: #FF3B30;
+    --ios-orange: #FF9500;
   }
   
   body {
@@ -23,7 +24,7 @@
   
   .game-container {
     max-width: 100%;
-    padding: 20px;
+    padding: 10px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -33,18 +34,18 @@
   h1, h2 {
     font-weight: 600;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   
   button {
     display: block;
     width: 100%;
     padding: 15px;
-    margin: 10px 0;
+    margin: 5px 0;
     background-color: var(--ios-blue);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
@@ -58,51 +59,51 @@
   
   input[type="text"], textarea {
     width: 100%;
-    padding: 15px;
-    margin: 10px 0;
+    padding: 12px;
+    margin: 5px 0;
     border: 1px solid var(--ios-dark-gray);
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 16px;
     box-sizing: border-box;
   }
   
   .word-display {
-    font-size: 36px;
+    font-size: 28px;
     font-weight: bold;
     text-align: center;
-    margin: 20px 0;
-    height: 40px;
+    margin: 10px 0;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
   .timer {
-    font-size: 72px;
+    font-size: 56px;
     text-align: center;
-    margin: 20px 0;
+    margin: 10px 0;
     font-weight: bold;
     color: var(--ios-blue);
   }
   
   .team-scores {
     background-color: white;
-    border-radius: 15px;
+    border-radius: 12px;
     padding: 15px;
-    margin-top: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 22px;
   }
   
   .team-scores div {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid var(--ios-light-gray);
-    font-size: 18px;
   }
   
   .team-scores div:last-child {
@@ -113,12 +114,12 @@
     font-size: 24px;
     font-weight: bold;
     text-align: center;
-    margin: 20px 0;
+    margin: 15px 0;
     color: var(--ios-blue);
     background-color: white;
     padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
   #fileInput {
@@ -127,17 +128,22 @@
   
   .file-input-label {
     display: inline-block;
-    padding: 15px;
+    padding: 12px;
     background-color: var(--ios-blue);
     color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     text-align: center;
-    margin: 10px 0;
+    margin: 5px 0;
     font-size: 16px;
     font-weight: 600;
     width: 100%;
     box-sizing: border-box;
+  }
+  
+  #correctButton, #skipButton {
+    font-size: 22px;
+    padding: 22px;
   }
   
   #correctButton {
@@ -146,6 +152,11 @@
   
   #skipButton {
     background-color: var(--ios-red);
+  }
+  
+  #nextRoundButton {
+    background-color: var(--ios-orange);
+    margin-top: 10px;
   }
   
   #gameArea {
@@ -167,24 +178,50 @@
   }
   
   .word-input-container {
-    margin-top: 20px;
+    margin-top: 10px;
   }
   
   @media (max-width: 600px) {
     .game-container {
-      padding: 15px;
+      padding: 8px;
     }
     
     .word-display {
-      font-size: 28px;
+      font-size: 26px;
+      padding: 14px;
     }
     
     .timer {
-      font-size: 60px;
+      font-size: 52px;
     }
     
     button {
+      font-size: 18px;
+      padding: 14px;
+    }
+    
+    #correctButton, #skipButton {
+      font-size: 20px;
+      padding: 20px;
+    }
+    
+    h1, h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    
+    input[type="text"], textarea {
+      padding: 12px;
       font-size: 16px;
+    }
+    
+    .team-scores div {
+      font-size: 20px;
+      padding: 10px 0;
+    }
+    
+    #currentTeamScore {
+      font-size: 22px;
       padding: 12px;
     }
   }
@@ -214,16 +251,18 @@
     </div>
     <div id="gameArea" style="display:none;">
       <div class="word-display" id="wordDisplay"></div>
-      <div class="timer" id="timer">5</div>
+      <div class="timer" id="timer">60</div>
       <div id="currentTeamScore"></div>
       <div class="game-buttons">
         <button id="skipButton">Omite</button>
         <button id="correctButton">Corect</button>
       </div>
+      <button id="nextRoundButton" style="display:none;">Următoarea rundă</button>
       <div class="team-scores" id="teamScores"></div>
-      <button id="nextRoundButton" style="display:none;">Începe runda următoare</button>
     </div>
   </div>
+
+  <audio id="endSound" src="https://websim.ru/alias/end_sound.mp3"></audio>
 
   <script>
     let words = [];
@@ -231,7 +270,7 @@
     let currentWord = '';
     let currentTeamIndex = 0;
     let timer;
-    let timeLeft = 5;
+    let timeLeft = 60;
 
     const setup = document.getElementById('setup');
     const gameArea = document.getElementById('gameArea');
@@ -248,6 +287,7 @@
     const wordStatus = document.getElementById('wordStatus');
     const fileInput = document.getElementById('fileInput');
     const fileStatus = document.getElementById('fileStatus');
+    const endSound = document.getElementById('endSound');
 
     startGameButton.addEventListener('click', setupGame);
     correctButton.addEventListener('click', correctWord);
@@ -258,7 +298,7 @@
 
     function updateWordStatus() {
       const inputWords = wordInput.value.split(',').map(word => word.trim()).filter(word => word !== '');
-      wordStatus.textContent = `Cuvinte introduse: ${inputWords.length}`;
+      wordStatus.textContent = `Cuvinte: ${inputWords.length}`;
     }
 
     function handleFileUpload(event) {
@@ -268,12 +308,12 @@
         reader.onload = function(e) {
           const content = e.target.result;
           words = content.split(/[,\n\r\t]+/).map(word => word.trim()).filter(word => word !== '');
-          fileStatus.textContent = `Încărcat cu succes: ${words.length} cuvinte`;
+          fileStatus.textContent = `Încărcat: ${words.length} cuvinte`;
           wordInput.value = words.join(', ');
           updateWordStatus();
         };
         reader.onerror = function() {
-          fileStatus.textContent = 'Eroare la citirea fișierului';
+          fileStatus.textContent = 'Eroare la citire';
         };
         reader.readAsText(file);
       }
@@ -283,7 +323,7 @@
       words = wordInput.value.split(',').map(word => word.trim()).filter(word => word !== '');
       
       if (words.length === 0) {
-        alert('Vă rugăm să introduceți cuvinte sau să încărcați un fișier înainte de a începe jocul.');
+        alert('Introduceți cuvinte sau încărcați un fișier.');
         return;
       }
 
@@ -328,13 +368,14 @@
 
     function startTimer() {
       clearInterval(timer);
-      timeLeft = 5;
+      timeLeft = 60;
       timerDisplay.textContent = timeLeft;
       timer = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = timeLeft;
         if (timeLeft === 0) {
           clearInterval(timer);
+          endSound.play();
           endTurn();
         }
       }, 1000);
