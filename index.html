@@ -10,6 +10,7 @@
     --ios-green: #34C759;
     --ios-red: #FF3B30;
     --ios-orange: #FF9500;
+    font-size: 16px;
   }
   
   body {
@@ -20,11 +21,12 @@
     color: #000;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 1rem;
   }
   
   .game-container {
     max-width: 100%;
-    padding: 10px;
+    padding: 0.625rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -34,19 +36,19 @@
   h1, h2 {
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem;
   }
   
   button {
     display: block;
     width: 100%;
-    padding: 15px;
-    margin: 5px 0;
+    padding: 0.9375rem;
+    margin: 0.3125rem 0;
     background-color: var(--ios-blue);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 18px;
+    border-radius: 0.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s;
@@ -59,50 +61,50 @@
   
   input[type="text"], textarea {
     width: 100%;
-    padding: 12px;
-    margin: 5px 0;
+    padding: 0.75rem;
+    margin: 0.3125rem 0;
     border: 1px solid var(--ios-dark-gray);
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 0.5rem;
+    font-size: 1rem;
     box-sizing: border-box;
   }
   
   .word-display {
-    font-size: 28px;
+    font-size: 1.75rem;
     font-weight: bold;
     text-align: center;
-    margin: 10px 0;
-    height: 32px;
+    margin: 0.625rem 0;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: white;
-    border-radius: 12px;
-    padding: 15px;
+    border-radius: 0.75rem;
+    padding: 0.9375rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
   .timer {
-    font-size: 56px;
+    font-size: 3.5rem;
     text-align: center;
-    margin: 10px 0;
+    margin: 0.625rem 0;
     font-weight: bold;
     color: var(--ios-blue);
   }
   
   .team-scores {
     background-color: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-top: -5px;
+    border-radius: 0.75rem;
+    padding: 0.9375rem;
+    margin-top: -0.3125rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    font-size: 22px;
+    font-size: 1.375rem;
   }
   
   .team-scores div {
     display: flex;
     justify-content: space-between;
-    padding: 12px 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--ios-light-gray);
   }
   
@@ -111,14 +113,14 @@
   }
   
   #currentTeamScore {
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: bold;
     text-align: center;
-    margin: 15px 0;
+    margin: 0.9375rem 0;
     color: var(--ios-blue);
     background-color: white;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 0.9375rem;
+    border-radius: 0.75rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
@@ -128,22 +130,22 @@
   
   .file-input-label {
     display: inline-block;
-    padding: 12px;
+    padding: 0.75rem;
     background-color: var(--ios-blue);
     color: white;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     cursor: pointer;
     text-align: center;
-    margin: 5px 0;
-    font-size: 16px;
+    margin: 0.3125rem 0;
+    font-size: 1rem;
     font-weight: 600;
     width: 100%;
     box-sizing: border-box;
   }
   
   #correctButton, #skipButton {
-    font-size: 22px;
-    padding: 22px;
+    font-size: 1.375rem;
+    padding: 1.375rem;
   }
   
   #correctButton {
@@ -156,7 +158,7 @@
   
   #nextRoundButton {
     background-color: var(--ios-orange);
-    margin-top: 10px;
+    margin-top: 0.625rem;
   }
   
   #gameArea {
@@ -170,60 +172,81 @@
     display: flex;
     justify-content: space-between;
     margin-top: auto;
-    margin-bottom: 15px;  /* Added this line to move buttons up */
+    margin-bottom: 0.9375rem;
   }
   
   .game-buttons button {
     flex: 1;
-    margin: 0 5px;
+    margin: 0 0.3125rem;
   }
   
   .word-input-container {
-    margin-top: 10px;
+    margin-top: 0.625rem;
   }
   
   @media (max-width: 600px) {
+    :root {
+      font-size: 14px;
+    }
+    
     .game-container {
-      padding: 8px;
+      padding: 0.5rem;
     }
     
     .word-display {
-      font-size: 26px;
-      padding: 14px;
+      font-size: 1.625rem;
+      padding: 0.875rem;
     }
     
     .timer {
-      font-size: 52px;
+      font-size: 3.25rem;
     }
     
     button {
-      font-size: 18px;
-      padding: 14px;
+      font-size: 1.125rem;
+      padding: 0.875rem;
     }
     
     #correctButton, #skipButton {
-      font-size: 20px;
-      padding: 20px;
+      font-size: 1.25rem;
+      padding: 1.25rem;
     }
     
     h1, h2 {
-      font-size: 22px;
-      margin-bottom: 10px;
+      font-size: 1.375rem;
+      margin-bottom: 0.625rem;
     }
     
     input[type="text"], textarea {
-      padding: 12px;
-      font-size: 16px;
+      padding: 0.75rem;
+      font-size: 1rem;
     }
     
     .team-scores div {
-      font-size: 20px;
-      padding: 10px 0;
+      font-size: 1.25rem;
+      padding: 0.625rem 0;
     }
     
     #currentTeamScore {
-      font-size: 22px;
-      padding: 12px;
+      font-size: 1.375rem;
+      padding: 0.75rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    :root {
+      font-size: 12px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    :root {
+      font-size: 18px;
+    }
+    
+    .game-container {
+      max-width: 1000px;
+      margin: 0 auto;
     }
   }
 </style>
