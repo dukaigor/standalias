@@ -1,59 +1,294 @@
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
-    let roomCode;
-
-    function createRoom() {
-        roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-        socket.emit('createRoom', roomCode);
-        alert(`Room created! Share this code: ${roomCode}`);
-        document.getElementById('roomCodeDisplay').textContent = `Room Code: ${roomCode}`;
-        document.getElementById('teamSetup').style.display = 'block';
-        document.getElementById('roomSetup').style.display = 'none';
-    }
-
-    function joinRoom() {
-        roomCode = prompt("Enter room code:");
-        socket.emit('joinRoom', roomCode);
-        document.getElementById('roomCodeDisplay').textContent = `Room Code: ${roomCode}`;
-        document.getElementById('teamSetup').style.display = 'block';
-        document.getElementById('roomSetup').style.display = 'none';
-    }
-
-    socket.on('playerJoined', (numPlayers) => {
-        alert(`Player ${numPlayers} has joined the room.`);
-        if (numPlayers === 3) {
-            document.getElementById('startButton').style.display = 'block';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standupovka Alias</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f0f5;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-    });
 
-    socket.on('gameStarted', (roomData) => {
-        document.getElementById('gameDisplay').style.display = 'block';
-        document.getElementById('teamSetup').style.display = 'none';
-        startGame();
-    });
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    function startGame() {
-        const words = document.getElementById('fileUpload').files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result.split(/\r?\n/).filter(word => word.trim().length > 0);
-            socket.emit('startGame', roomCode, text);
-        };
-        reader.readAsText(words);
-    }
+        .title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
 
-    socket.on('scoreUpdate', (scores) => {
-        updateScoreboard(scores);
-    });
+        .timer {
+            font-size: 48px;
+            margin: 20px 0;
+            color: #ff3b30;
+        }
 
-    socket.on('nextWord', (word) => {
-        document.getElementById('word').textContent = word;
-    });
+        .word {
+            font-size: 48px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
 
-    socket.on('roundStarted', (roomData) => {
-        document.getElementById('nextRoundButton').style.display = 'none';
-        startTimer();
-        nextWord();
-    });
-</script>
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007aff;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005db3;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        #fileUpload {
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .action-buttons .action-button {
+            flex: 1;
+            margin: 0 10px;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .action-buttons .action-button.green {
+            background-color: #34c759;
+        }
+
+        .action-buttons .action-button.green:hover {
+            background-color: #2aa94a;
+        }
+
+        .action-buttons .action-button.red {
+            background-color: #ff3b30;
+        }
+
+        .action-buttons .action-button.red:hover {
+            background-color: #d6332b;
+        }
+
+        .next-round-button {
+            background-color: #ff9500;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+            display: none;
+        }
+
+        .next-round-button:hover {
+            background-color: #cc7a00;
+        }
+
+        .scoreboard {
+            width: 100%;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .scoreboard h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
+
+        .scoreboard ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .scoreboard ul li {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Standupovka Alias</div>
+        
+        <div id="roomSetup">
+            <h3>Standupovka Alias</h3>
+            <button onclick="createRoom()">Creează o cameră nouă</button>
+            <button onclick="joinRoom()">Alătură-te unei camere existente</button>
+            <p id="roomCodeDisplay"></p>
+        </div>
+
+        <!-- Team Names -->
+        <div id="teamSetup" style="display: none;">
+            <div class="input-group">
+                <label for="team1">Team 1 Name:</label>
+                <input type="text" id="team1" placeholder="Enter team name">
+            </div>
+            <div class="input-group">
+                <label for="team2">Team 2 Name:</label>
+                <input type="text" id="team2" placeholder="Enter team name">
+            </div>
+            <div class="input-group">
+                <label for="team3">Team 3 Name:</label>
+                <input type="text" id="team3" placeholder="Enter team name">
+            </div>
+
+            <!-- Word File Upload -->
+            <div class="input-group">
+                <label for="fileUpload">Upload Words File (txt):</label>
+                <input type="file" id="fileUpload" accept=".txt">
+            </div>
+
+            <a href="#" class="button" id="startButton" style="display: none;" onclick="startGame()">Start Game</a>
+        </div>
+        
+        <!-- Game Display -->
+        <div id="gameDisplay" style="display: none;">
+            <div class="timer" id="timer">60</div>
+            <div class="word" id="word">Start</div>
+
+            <div class="action-buttons">
+                <div class="action-button green" id="guessedButton" onclick="socket.emit('wordGuessed', roomCode)">GHICIT</div>
+                <div class="action-button red" id="skipButton" onclick="socket.emit('skipWord', roomCode)">OMITE</div>
+            </div>
+
+            <a href="#" class="next-round-button" id="nextRoundButton" onclick="socket.emit('nextRound', roomCode)">URMĂTOAREA RUNDĂ</a>
+
+            <div class="scoreboard" id="scoreboard">
+                <h3>Scoruri:</h3>
+                <ul>
+                    <li id="scoreTeam1"></li>
+                    <li id="scoreTeam2"></li>
+                    <li id="scoreTeam3"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let roomCode;
+
+        function createRoom() {
+            roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+            socket.emit('createRoom', roomCode);
+            alert(`Room created! Share this code: ${roomCode}`);
+            document.getElementById('roomCodeDisplay').textContent = `Room Code: ${roomCode}`;
+            document.getElementById('teamSetup').style.display = 'block';
+            document.getElementById('roomSetup').style.display = 'none';
+        }
+
+        function joinRoom() {
+            roomCode = prompt("Enter room code:");
+            socket.emit('joinRoom', roomCode);
+            document.getElementById('roomCodeDisplay').textContent = `Room Code: ${roomCode}`;
+            document.getElementById('teamSetup').style.display = 'block';
+            document.getElementById('roomSetup').style.display = 'none';
+        }
+
+        socket.on('playerJoined', (numPlayers) => {
+            alert(`Player ${numPlayers} has joined the room.`);
+            if (numPlayers === 3) {
+                document.getElementById('startButton').style.display = 'block';
+            }
+        });
+
+        socket.on('gameStarted', (roomData) => {
+            document.getElementById('gameDisplay').style.display = 'block';
+            document.getElementById('teamSetup').style.display = 'none';
+            startTimer();
+        });
+
+        function startGame() {
+            const file = document.getElementById('fileUpload').files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result.split(/\r?\n/).filter(word => word.trim().length > 0);
+                socket.emit('startGame', roomCode, text);
+            };
+            reader.readAsText(file);
+        }
+
+        function startTimer() {
+            let timeLeft = 60;
+            document.getElementById('timer').textContent = timeLeft;
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('nextRoundButton').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        socket.on('scoreUpdate', (scores) => {
+            document.getElementById('scoreTeam1').textContent = `Team 1: ${scores[0]} puncte`;
+            document.getElementById('scoreTeam2').textContent = `Team 2: ${scores[1]} puncte`;
+            document.getElementById('scoreTeam3').textContent = `Team 3: ${scores[2]} puncte`;
+        });
+
+        socket.on('nextWord', (word) => {
+            document.getElementById('word').textContent = word;
+        });
+
+        socket.on('roundStarted', (roomData) => {
+            document.getElementById('nextRoundButton').style.display = 'none';
+            startTimer();
+        });
+    </script>
+</body>
+</html>
