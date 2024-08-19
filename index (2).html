@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standupovka Alias</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f0f5;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
+
+        .timer {
+            font-size: 48px;
+            margin: 20px 0;
+            color: #ff3b30;
+        }
+
+        .word {
+            font-size: 48px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007aff;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005db3;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        #fileUpload {
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .action-buttons .action-button {
+            flex: 1;
+            margin: 0 10px;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .action-buttons .action-button.green {
+            background-color: #34c759;
+        }
+
+        .action-buttons .action-button.green:hover {
+            background-color: #2aa94a;
+        }
+
+        .action-buttons .action-button.red {
+            background-color: #ff3b30;
+        }
+
+        .action-buttons .action-button.red:hover {
+            background-color: #d6332b;
+        }
+
+        .next-round-button {
+            background-color: #ff9500;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+            display: none;
+        }
+
+        .next-round-button:hover {
+            background-color: #cc7a00;
+        }
+
+        .scoreboard {
+            width: 100%;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .scoreboard h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
+
+        .scoreboard ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .scoreboard ul li {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Standupovka Alias</div>
+        
+        <!-- Team Names -->
+        <div id="teamSetup">
+            <div class="input-group">
+                <label for="team1">Team 1 Name:</label>
+                <input type="text" id="team1" placeholder="Enter team name">
+            </div>
+            <div class="input-group">
+                <label for="team2">Team 2 Name:</label>
+                <input type="text" id="team2" placeholder="Enter team name">
+            </div>
+            <div class="input-group">
+                <label for="team3">Team 3 Name:</label>
+                <input type="text" id="team3" placeholder="Enter team name">
+            </div>
+
+            <!-- Word File Upload -->
+            <div class="input-group">
+                <label for="fileUpload">Upload Words File (txt):</label>
+                <input type="file" id="fileUpload" accept=".txt">
+            </div>
+
+            <a href="#" class="button" id="startButton">Start Game</a>
+        </div>
+        
+        <!-- Game Display -->
+        <div id="gameDisplay" style="display: none;">
+            <div class="timer" id="timer">60</div>
+            <div class="word" id="word">Start</div>
+
+            <div class="action-buttons">
+                <div class="action-button green" id="guessedButton">GHICIT</div>
+                <div class="action-button red" id="skipButton">OMITE</div>
+            </div>
+
+            <a href="#" class="next-round-button" id="nextRoundButton">URMĂTOAREA RUNDĂ</a>
+
+            <div class="scoreboard" id="scoreboard">
+                <h3>Scoruri:</h3>
+                <ul>
+                    <li id="scoreTeam1"></li>
+                    <li id="scoreTeam2"></li>
+                    <li id="scoreTeam3"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let words = [];
+        let skippedWords = [];
+        let timeLeft = 60;
+        let timerInterval;
+        let currentTeamIndex = 0;
+        const teams = [];
+        const scores = [0, 0, 0];
+
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('fileUpload').addEventListener('change', handleFileUpload);
+        document.getElementById('guessedButton').addEventListener('click', guessedWord);
+        document.getElementById('skipButton').addEventListener('click', skipWord);
+        document.getElementById('nextRoundButton').addEventListener('click', startNextRound);
+
+        function startGame() {
+            const team1 = document.getElementById('team1').value;
+            const team2 = document.getElementById('team2').value;
+            const team3 = document.getElementById('team3').value;
+
+            if (!team1 || !team2 || !team3 || words.length === 0) {
+                alert('Please fill all team names and upload a word file.');
+                return;
+            }
+
+            teams.push(team1, team2, team3);
+
+            document.getElementById('teamSetup').style.display = 'none';
+            document.getElementById('gameDisplay').style.display = 'block';
+            updateScoreboard();
+            startTimer();
+            nextWord();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('word').textContent = `Time's up for ${teams[currentTeamIndex]}!`;
+                    document.getElementById('nextRoundButton').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        function startNextRound() {
+            document.getElementById('nextRoundButton').style.display = 'none';
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            timeLeft = 60;
+            startTimer();
+            nextWord();
+        }
+
+        function nextWord() {
+            if (words.length > 0 && timeLeft > 0) {
+                let randomIndex = Math.floor(Math.random() * words.length);
+                document.getElementById('word').textContent = words[randomIndex];
+            }
+        }
+
+        function guessedWord() {
+            const currentWord = document.getElementById('word').textContent;
+            scores[currentTeamIndex]++;
+            words = words.filter(word => word !== currentWord);
+            updateScoreboard();
+            nextWord();
+        }
+
+        function skipWord() {
+            const currentWord = document.getElementById('word').textContent;
+            skippedWords.push(currentWord);
+            nextWord();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const text = e.target.result;
+                words = text.split(/\r?\n/).filter(word => word.trim().length > 0); // Split by lines and remove empty lines
+            };
+
+            reader.readAsText(file);
+        }
+
+        function updateScoreboard() {
+            document.getElementById('scoreTeam1').textContent = `${teams[0]}: ${scores[0]} puncte`;
+            document.getElementById('scoreTeam2').textContent = `${teams[1]}: ${scores[1]} puncte`;
+            document.getElementById('scoreTeam3').textContent = `${teams[2]}: ${scores[2]} puncte`;
+        }
+    </script>
+</body>
+</html>
