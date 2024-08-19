@@ -30,7 +30,9 @@ io.on('connection', (socket) => {
     socket.on('startGame', (roomCode, words) => {
         if (rooms[roomCode]) {
             rooms[roomCode].words = words;
+            rooms[roomCode].currentWord = words[0];
             io.to(roomCode).emit('gameStarted', rooms[roomCode]);
+            io.to(roomCode).emit('nextWord', rooms[roomCode].currentWord);
         }
     });
 
@@ -38,15 +40,17 @@ io.on('connection', (socket) => {
         if (rooms[roomCode]) {
             rooms[roomCode].scores[rooms[roomCode].currentTeamIndex]++;
             rooms[roomCode].words = rooms[roomCode].words.filter(word => word !== rooms[roomCode].currentWord);
+            rooms[roomCode].currentWord = rooms[roomCode].words[0] || '';
             io.to(roomCode).emit('scoreUpdate', rooms[roomCode].scores);
-            io.to(roomCode).emit('nextWord', rooms[roomCode].words[0]);
+            io.to(roomCode).emit('nextWord', rooms[roomCode].currentWord);
         }
     });
 
     socket.on('skipWord', (roomCode) => {
         if (rooms[roomCode]) {
             rooms[roomCode].skippedWords.push(rooms[roomCode].currentWord);
-            io.to(roomCode).emit('nextWord', rooms[roomCode].words[0]);
+            rooms[roomCode].currentWord = rooms[roomCode].words[0] || '';
+            io.to(roomCode).emit('nextWord', rooms[roomCode].currentWord);
         }
     });
 
@@ -54,13 +58,15 @@ io.on('connection', (socket) => {
         if (rooms[roomCode]) {
             rooms[roomCode].currentTeamIndex = (rooms[roomCode].currentTeamIndex + 1) % rooms[roomCode].players.length;
             rooms[roomCode].timeLeft = 60;
+            rooms[roomCode].currentWord = rooms[roomCode].words[0] || '';
             io.to(roomCode).emit('roundStarted', rooms[roomCode]);
+            io.to(roomCode).emit('nextWord', rooms[roomCode].currentWord);
         }
     });
 
     socket.on('disconnect', () => {
         console.log('A user disconnected:', socket.id);
-        // Logic to handle player disconnection and room cleanup
+        // Logic to handle player disconnection and room cleanup can be added here.
     });
 });
 
