@@ -351,7 +351,7 @@
             currentTeamIndex = parseInt(localStorage.getItem(roomCode + '_currentTeamIndex') || '0', 10);
 
             if (teams.length > 0) {
-                document.getElementById('gameSetup').style.display = 'none';
+                document.getElementById('roomSetup').style.display = 'none';
                 document.getElementById('gameDisplay').style.display = 'block';
                 updateScoreboard();
                 startTimer();
