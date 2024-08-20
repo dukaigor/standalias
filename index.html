@@ -330,7 +330,11 @@
                 document.getElementById('timer').textContent = timeLeft;
 
                 if (timeLeft === 1) {
+                    // Play sound and trigger vibration
                     endSound.play();
+                    if (navigator.vibrate) {
+                        navigator.vibrate(200);
+                    }
                 }
 
                 if (timeLeft <= 0) {
