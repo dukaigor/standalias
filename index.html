@@ -71,15 +71,6 @@
             background-color: #005db3;
         }
 
-        .link {
-            margin-top: 20px;
-            word-wrap: break-word;
-            font-size: 14px;
-            color: #007aff;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
         .timer {
             font-size: 48px;
             margin: 20px 0;
@@ -174,11 +165,6 @@
                 <label for="roomCode">Introduceți codul camerei:</label>
                 <input type="text" id="roomCode" placeholder="Codul dorit pentru cameră">
             </div>
-            <button class="button" onclick="createRoom()">Creează Cameră</button>
-            <button class="button" onclick="joinRoom()">Alătură-te Camerei</button>
-        </div>
-
-        <div id="gameSetup" style="display: none;">
             <div class="input-group">
                 <label for="team1">Team 1 Name:</label>
                 <input type="text" id="team1" placeholder="Enter team name">
@@ -191,13 +177,23 @@
                 <label for="team3">Team 3 Name:</label>
                 <input type="text" id="team3" placeholder="Enter team name">
             </div>
-
             <div class="input-group">
                 <label for="fileUpload">Upload Words File (txt):</label>
                 <input type="file" id="fileUpload" accept=".txt">
             </div>
+            <button class="button" onclick="createRoom()">Creează Cameră</button>
+        </div>
 
-            <a href="#" class="button" id="startButton" onclick="startGame()">Start Game</a>
+        <div id="joinSetup" style="display: none;">
+            <div class="input-group">
+                <label for="joinRoomCode">Introduceți codul camerei existente:</label>
+                <input type="text" id="joinRoomCode" placeholder="Codul camerei existente">
+            </div>
+            <button class="button" onclick="joinRoom()">Alătură-te Camerei</button>
+        </div>
+
+        <div id="startGameSetup" style="display: none;">
+            <button class="button" onclick="startGame()">START JOC</button>
         </div>
 
         <div id="gameDisplay" style="display: none;">
@@ -226,6 +222,7 @@
         let words = [];
         let skippedWords = [];
         let timeLeft = 60;
+        let timerInterval;
         let currentTeamIndex = 0;
         const teams = [];
         const scores = [0, 0, 0];
@@ -233,66 +230,52 @@
 
         function createRoom() {
             roomCode = document.getElementById('roomCode').value.trim();
-            if (!roomCode) {
-                alert('Vă rugăm să introduceți un cod de cameră valid.');
-                return;
-            }
-            localStorage.setItem(roomCode + '_teams', JSON.stringify([]));
-            localStorage.setItem(roomCode + '_scores', JSON.stringify([0, 0, 0]));
-            localStorage.setItem(roomCode + '_words', JSON.stringify([]));
-            window.location.hash = roomCode;
-            showGameSetup();
-        }
+            const team1 = document.getElementById('team1').value.trim();
+            const team2 = document.getElementById('team2').value.trim();
+            const team3 = document.getElementById('team3').value.trim();
+            const fileInput = document.getElementById('fileUpload');
 
-        function joinRoom() {
-            roomCode = document.getElementById('roomCode').value.trim();
-            if (!roomCode) {
-                alert('Vă rugăm să introduceți un cod de cameră valid.');
-                return;
-            }
-            window.location.hash = roomCode;
-            loadGameState();
-        }
-
-        function showGameSetup() {
-            document.getElementById('roomSetup').style.display = 'none';
-            document.getElementById('gameSetup').style.display = 'block';
-        }
-
-        function startGame() {
-            const team1 = document.getElementById('team1').value;
-            const team2 = document.getElementById('team2').value;
-            const team3 = document.getElementById('team3').value;
-
-            if (!team1 || !team2 || !team3 || document.getElementById('fileUpload').files.length === 0) {
-                alert('Please fill all team names and upload a word file.');
+            if (!roomCode || !team1 || !team2 || !team3 || fileInput.files.length === 0) {
+                alert('Vă rugăm să completați toate câmpurile și să încărcați un fișier cu cuvinte.');
                 return;
             }
 
             teams.push(team1, team2, team3);
 
-            const file = document.getElementById('fileUpload').files[0];
+            const file = fileInput.files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
                 words = e.target.result.split(/\r?\n/).filter(word => word.trim().length > 0);
                 localStorage.setItem(roomCode + '_words', JSON.stringify(words));
                 localStorage.setItem(roomCode + '_teams', JSON.stringify(teams));
                 localStorage.setItem(roomCode + '_scores', JSON.stringify(scores));
-                updateScoreboard();
-                startTimer();
-                nextWord();
+                localStorage.setItem(roomCode + '_timeLeft', timeLeft);
+                localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
+                localStorage.setItem(roomCode + '_currentWord', '');
+                window.location.hash = roomCode;
+                showStartGameButton();
             };
             reader.readAsText(file);
+        }
 
-            document.getElementById('gameSetup').style.display = 'none';
+        function showStartGameButton() {
+            document.getElementById('roomSetup').style.display = 'none';
+            document.getElementById('startGameSetup').style.display = 'block';
+        }
+
+        function startGame() {
+            document.getElementById('startGameSetup').style.display = 'none';
             document.getElementById('gameDisplay').style.display = 'block';
+            nextWord();
+            startTimer();
         }
 
         function startTimer() {
-            timeLeft = 60;
-            const timerInterval = setInterval(() => {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timer').textContent = timeLeft;
+                localStorage.setItem(roomCode + '_timeLeft', timeLeft);
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     document.getElementById('nextRoundButton').style.display = 'block';
@@ -303,6 +286,9 @@
         function startNextRound() {
             document.getElementById('nextRoundButton').style.display = 'none';
             currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
+            timeLeft = 60;
+            localStorage.setItem(roomCode + '_timeLeft', timeLeft);
             startTimer();
             nextWord();
         }
@@ -310,7 +296,9 @@
         function nextWord() {
             if (words.length > 0 && timeLeft > 0) {
                 let randomIndex = Math.floor(Math.random() * words.length);
-                document.getElementById('word').textContent = words[randomIndex];
+                let currentWord = words[randomIndex];
+                document.getElementById('word').textContent = currentWord;
+                localStorage.setItem(roomCode + '_currentWord', currentWord);
             }
         }
 
@@ -336,35 +324,56 @@
         }
 
         function saveGameState() {
-            localStorage.setItem(roomCode + '_teams', JSON.stringify(teams));
             localStorage.setItem(roomCode + '_scores', JSON.stringify(scores));
             localStorage.setItem(roomCode + '_words', JSON.stringify(words));
             localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
+            localStorage.setItem(roomCode + '_timeLeft', timeLeft);
         }
 
         function loadGameState() {
+            if (!roomCode) return;
+
             teams.length = 0;
             teams.push(...JSON.parse(localStorage.getItem(roomCode + '_teams') || '[]'));
             scores.length = 0;
             scores.push(...JSON.parse(localStorage.getItem(roomCode + '_scores') || '[0, 0, 0]'));
             words = JSON.parse(localStorage.getItem(roomCode + '_words') || '[]');
             currentTeamIndex = parseInt(localStorage.getItem(roomCode + '_currentTeamIndex') || '0', 10);
+            timeLeft = parseInt(localStorage.getItem(roomCode + '_timeLeft') || '60', 10);
+            const currentWord = localStorage.getItem(roomCode + '_currentWord') || '';
 
             if (teams.length > 0) {
                 document.getElementById('roomSetup').style.display = 'none';
                 document.getElementById('gameDisplay').style.display = 'block';
+                document.getElementById('timer').textContent = timeLeft;
+                document.getElementById('word').textContent = currentWord;
                 updateScoreboard();
-                startTimer();
-                nextWord();
+                if (timeLeft > 0) {
+                    startTimer();
+                } else {
+                    document.getElementById('nextRoundButton').style.display = 'block';
+                }
             } else {
                 alert('Nu s-a găsit niciun joc activ pentru acest cod.');
             }
+        }
+
+        function joinRoom() {
+            roomCode = document.getElementById('joinRoomCode').value.trim();
+            if (!roomCode) {
+                alert('Introduceți un cod de cameră valid.');
+                return;
+            }
+            window.location.hash = roomCode;
+            loadGameState();
         }
 
         window.onload = function() {
             if (window.location.hash) {
                 roomCode = window.location.hash.substring(1);
                 loadGameState();
+            } else {
+                document.getElementById('joinSetup').style.display = 'block';
             }
         }
     </script>
