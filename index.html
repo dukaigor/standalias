@@ -121,7 +121,7 @@
             background-color: #d6332b;
         }
 
-        .next-round-button {
+        .next-round-button, .restart-button {
             background-color: #ff9500;
             color: white;
             padding: 10px 20px;
@@ -133,7 +133,7 @@
             display: none;
         }
 
-        .next-round-button:hover {
+        .next-round-button:hover, .restart-button:hover {
             background-color: #cc7a00;
         }
 
@@ -196,7 +196,7 @@
                 padding: 15px 30px;
             }
 
-            .next-round-button {
+            .next-round-button, .restart-button {
                 font-size: 24px;
                 padding: 15px 30px;
             }
@@ -229,7 +229,7 @@
                 font-size: 24px;
             }
 
-            .next-round-button {
+            .next-round-button, .restart-button {
                 font-size: 24px;
             }
         }
@@ -263,12 +263,13 @@
             <div class="timer" id="timer">60</div>
             <div class="word" id="word">Start</div>
 
-            <div class="action-buttons">
+            <div class="action-buttons" id="actionButtons">
                 <div class="action-button green" id="guessedButton" onclick="guessedWord()">GHICIT</div>
                 <div class="action-button red" id="skipButton" onclick="skipWord()">OMITE</div>
             </div>
 
             <a href="#" class="next-round-button" id="nextRoundButton" onclick="startNextRound()">URMĂTOAREA RUNDĂ</a>
+            <a href="#" class="restart-button" id="restartButton" onclick="restartGame()">RESTART JOC</a>
         </div>
 
         <!-- Audio element for the sound effect -->
@@ -367,7 +368,9 @@
             document.getElementById('nextRoundButton').style.display = 'none';
             currentTeamIndex = (currentTeamIndex + 1) % teams.length;
             timeLeft = 60;
-            if (currentTeamIndex === 0) {
+            if (scores[currentTeamIndex] >= 30) {
+                endGame(); // End game if a team has reached 30 points
+            } else if (currentTeamIndex === 0) {
                 // All teams have played, show full scoreboard
                 showFullScoreboard();
             } else {
@@ -386,8 +389,12 @@
         function guessedWord() {
             const currentWord = wordElement.textContent;
             scores[currentTeamIndex]++;
-            words = words.filter(word => word !== currentWord);
-            nextWord();
+            if (scores[currentTeamIndex] >= 30) {
+                endGame(); // End game if a team reaches 30 points
+            } else {
+                words = words.filter(word => word !== currentWord);
+                nextWord();
+            }
         }
 
         function skipWord() {
@@ -407,6 +414,17 @@
                 <div><strong>${teams[2]}</strong>: ${scores[2]} puncte</div>
             `;
             gameTitle.style.display = 'block';
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('actionButtons').style.display = 'none';
+            showFullScoreboard();
+            document.getElementById('restartButton').style.display = 'block';
+        }
+
+        function restartGame() {
+            location.reload();
         }
     </script>
 </body>
