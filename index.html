@@ -234,7 +234,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="title">Standupovka Alias</div>
+        <div class="title" id="gameTitle">Standupovka Alias</div>
 
         <div id="setup">
             <div class="input-group">
@@ -266,19 +266,10 @@
             </div>
 
             <a href="#" class="next-round-button" id="nextRoundButton" onclick="startNextRound()">URMĂTOAREA RUNDĂ</a>
-
-            <div class="scoreboard" id="scoreboard">
-                <h3>Scoruri:</h3>
-                <ul>
-                    <li id="scoreTeam1"></li>
-                    <li id="scoreTeam2"></li>
-                    <li id="scoreTeam3"></li>
-                </ul>
-            </div>
         </div>
 
         <!-- Audio element for the sound effect -->
-        <audio id="endSound">
+        <audio id="endSound" preload="auto">
             <source src="/mnt/data/z_uki-dlya-_ideo-z_uk-gonga.mp3" type="audio/mpeg">
         </audio>
 
@@ -293,6 +284,8 @@
         const teams = [];
         const scores = [0, 0, 0];
         const endSound = document.getElementById('endSound');
+        const wordElement = document.getElementById('word');
+        const gameTitle = document.getElementById('gameTitle');
 
         function setupGame() {
             const team1 = document.getElementById('team1').value.trim();
@@ -319,6 +312,7 @@
         function startGame() {
             document.getElementById('setup').style.display = 'none';
             document.getElementById('gameDisplay').style.display = 'block';
+            gameTitle.style.display = 'none';
             nextWord();
             startTimer();
         }
@@ -331,52 +325,74 @@
 
                 if (timeLeft === 1) {
                     // Play sound and trigger vibration
-                    endSound.play();
-                    if (navigator.vibrate) {
-                        navigator.vibrate(200);
-                    }
+                    playSoundAndVibrate();
                 }
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    showScoreForCurrentTeam();
                     document.getElementById('nextRoundButton').style.display = 'block';
                 }
             }, 1000);
+        }
+
+        function playSoundAndVibrate() {
+            // Play sound
+            endSound.currentTime = 0; // Reset sound to the beginning
+            endSound.play().catch(error => {
+                console.error("Error playing sound: ", error);
+            });
+
+            // Trigger vibration
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
         }
 
         function startNextRound() {
             document.getElementById('nextRoundButton').style.display = 'none';
             currentTeamIndex = (currentTeamIndex + 1) % teams.length;
             timeLeft = 60;
-            startTimer();
-            nextWord();
+            if (currentTeamIndex === 0) {
+                // All teams have played, show full scoreboard
+                showFullScoreboard();
+            } else {
+                nextWord();
+                startTimer();
+            }
         }
 
         function nextWord() {
             if (words.length > 0 && timeLeft > 0) {
                 let randomIndex = Math.floor(Math.random() * words.length);
-                document.getElementById('word').textContent = words[randomIndex];
+                wordElement.textContent = words[randomIndex];
             }
         }
 
         function guessedWord() {
-            const currentWord = document.getElementById('word').textContent;
+            const currentWord = wordElement.textContent;
             scores[currentTeamIndex]++;
             words = words.filter(word => word !== currentWord);
-            updateScoreboard();
             nextWord();
         }
 
         function skipWord() {
-            const currentWord = document.getElementById('word').textContent;
+            const currentWord = wordElement.textContent;
             skippedWords.push(currentWord);
             nextWord();
         }
 
-        function updateScoreboard() {
-            document.getElementById('scoreTeam1').textContent = `${teams[0]}: ${scores[0]} puncte`;
-            document.getElementById('scoreTeam2').textContent = `${teams[1]}: ${scores[1]} puncte`;
-            document.getElementById('scoreTeam3').textContent = `${teams[2]}: ${scores[2]} puncte`;
+        function showScoreForCurrentTeam() {
+            wordElement.textContent = `${teams[currentTeamIndex]} a obținut: ${scores[currentTeamIndex]} puncte`;
+        }
+
+        function showFullScoreboard() {
+            wordElement.innerHTML = `
+                <div><strong>${teams[0]}</strong>: ${scores[0]} puncte</div>
+                <div><strong>${teams[1]}</strong>: ${scores[1]} puncte</div>
+                <div><strong>${teams[2]}</strong>: ${scores[2]} puncte</div>
+            `;
+            gameTitle.style.display = 'block';
         }
     </script>
 </body>
