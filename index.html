@@ -21,8 +21,8 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+            max-width: 100%;
+            width: 400px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -88,11 +88,12 @@
             justify-content: space-around;
             width: 100%;
             margin-top: 20px;
+            flex-direction: column;
         }
 
         .action-buttons .action-button {
             flex: 1;
-            margin: 0 10px;
+            margin: 10px 0;
             padding: 10px 20px;
             color: white;
             border-radius: 10px;
@@ -154,17 +155,88 @@
             font-size: 18px;
             margin: 5px 0;
         }
+
+        /* Responsive design for horizontal orientation */
+        @media (orientation: landscape) {
+            .container {
+                flex-direction: row;
+                padding: 20px;
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                justify-content: space-around;
+            }
+
+            .title {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+
+            .timer {
+                font-size: 64px;
+            }
+
+            .word {
+                font-size: 64px;
+                margin: 30px 0;
+            }
+
+            .action-buttons {
+                flex-direction: row;
+                margin-top: 0;
+            }
+
+            .action-buttons .action-button {
+                margin: 0 10px;
+                flex: 1;
+                font-size: 24px;
+                padding: 15px 30px;
+            }
+
+            .next-round-button {
+                font-size: 24px;
+                padding: 15px 30px;
+            }
+
+            .scoreboard {
+                text-align: right;
+            }
+        }
+
+        /* Adjustments for larger screens */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 700px;
+            }
+
+            .title {
+                font-size: 32px;
+            }
+
+            .timer {
+                font-size: 64px;
+            }
+
+            .word {
+                font-size: 64px;
+                margin: 30px 0;
+            }
+
+            .action-buttons .action-button {
+                font-size: 24px;
+            }
+
+            .next-round-button {
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="title">Standupovka Alias</div>
 
-        <div id="roomSetup">
-            <div class="input-group">
-                <label for="roomCode">Introduceți codul camerei:</label>
-                <input type="text" id="roomCode" placeholder="Codul dorit pentru cameră">
-            </div>
+        <div id="setup">
             <div class="input-group">
                 <label for="team1">Team 1 Name:</label>
                 <input type="text" id="team1" placeholder="Enter team name">
@@ -181,19 +253,7 @@
                 <label for="fileUpload">Upload Words File (txt):</label>
                 <input type="file" id="fileUpload" accept=".txt">
             </div>
-            <button class="button" onclick="createRoom()">Creează Cameră</button>
-        </div>
-
-        <div id="joinSetup" style="display: none;">
-            <div class="input-group">
-                <label for="joinRoomCode">Introduceți codul camerei existente:</label>
-                <input type="text" id="joinRoomCode" placeholder="Codul camerei existente">
-            </div>
-            <button class="button" onclick="joinRoom()">Alătură-te Camerei</button>
-        </div>
-
-        <div id="startGameSetup" style="display: none;">
-            <button class="button" onclick="startGame()">START JOC</button>
+            <button class="button" onclick="setupGame()">START JOC</button>
         </div>
 
         <div id="gameDisplay" style="display: none;">
@@ -216,6 +276,12 @@
                 </ul>
             </div>
         </div>
+
+        <!-- Audio element for the sound effect -->
+        <audio id="endSound">
+            <source src="/mnt/data/z_uki-dlya-_ideo-z_uk-gonga.mp3" type="audio/mpeg">
+        </audio>
+
     </div>
 
     <script>
@@ -226,16 +292,15 @@
         let currentTeamIndex = 0;
         const teams = [];
         const scores = [0, 0, 0];
-        let roomCode = '';
+        const endSound = document.getElementById('endSound');
 
-        function createRoom() {
-            roomCode = document.getElementById('roomCode').value.trim();
+        function setupGame() {
             const team1 = document.getElementById('team1').value.trim();
             const team2 = document.getElementById('team2').value.trim();
             const team3 = document.getElementById('team3').value.trim();
             const fileInput = document.getElementById('fileUpload');
 
-            if (!roomCode || !team1 || !team2 || !team3 || fileInput.files.length === 0) {
+            if (!team1 || !team2 || !team3 || fileInput.files.length === 0) {
                 alert('Vă rugăm să completați toate câmpurile și să încărcați un fișier cu cuvinte.');
                 return;
             }
@@ -246,25 +311,13 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 words = e.target.result.split(/\r?\n/).filter(word => word.trim().length > 0);
-                localStorage.setItem(roomCode + '_words', JSON.stringify(words));
-                localStorage.setItem(roomCode + '_teams', JSON.stringify(teams));
-                localStorage.setItem(roomCode + '_scores', JSON.stringify(scores));
-                localStorage.setItem(roomCode + '_timeLeft', timeLeft);
-                localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
-                localStorage.setItem(roomCode + '_currentWord', '');
-                window.location.hash = roomCode;
-                showStartGameButton();
+                startGame();
             };
             reader.readAsText(file);
         }
 
-        function showStartGameButton() {
-            document.getElementById('roomSetup').style.display = 'none';
-            document.getElementById('startGameSetup').style.display = 'block';
-        }
-
         function startGame() {
-            document.getElementById('startGameSetup').style.display = 'none';
+            document.getElementById('setup').style.display = 'none';
             document.getElementById('gameDisplay').style.display = 'block';
             nextWord();
             startTimer();
@@ -275,7 +328,11 @@
             timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timer').textContent = timeLeft;
-                localStorage.setItem(roomCode + '_timeLeft', timeLeft);
+
+                if (timeLeft === 1) {
+                    endSound.play();
+                }
+
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     document.getElementById('nextRoundButton').style.display = 'block';
@@ -286,9 +343,7 @@
         function startNextRound() {
             document.getElementById('nextRoundButton').style.display = 'none';
             currentTeamIndex = (currentTeamIndex + 1) % teams.length;
-            localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
             timeLeft = 60;
-            localStorage.setItem(roomCode + '_timeLeft', timeLeft);
             startTimer();
             nextWord();
         }
@@ -296,9 +351,7 @@
         function nextWord() {
             if (words.length > 0 && timeLeft > 0) {
                 let randomIndex = Math.floor(Math.random() * words.length);
-                let currentWord = words[randomIndex];
-                document.getElementById('word').textContent = currentWord;
-                localStorage.setItem(roomCode + '_currentWord', currentWord);
+                document.getElementById('word').textContent = words[randomIndex];
             }
         }
 
@@ -320,61 +373,6 @@
             document.getElementById('scoreTeam1').textContent = `${teams[0]}: ${scores[0]} puncte`;
             document.getElementById('scoreTeam2').textContent = `${teams[1]}: ${scores[1]} puncte`;
             document.getElementById('scoreTeam3').textContent = `${teams[2]}: ${scores[2]} puncte`;
-            saveGameState();
-        }
-
-        function saveGameState() {
-            localStorage.setItem(roomCode + '_scores', JSON.stringify(scores));
-            localStorage.setItem(roomCode + '_words', JSON.stringify(words));
-            localStorage.setItem(roomCode + '_currentTeamIndex', currentTeamIndex);
-            localStorage.setItem(roomCode + '_timeLeft', timeLeft);
-        }
-
-        function loadGameState() {
-            if (!roomCode) return;
-
-            teams.length = 0;
-            teams.push(...JSON.parse(localStorage.getItem(roomCode + '_teams') || '[]'));
-            scores.length = 0;
-            scores.push(...JSON.parse(localStorage.getItem(roomCode + '_scores') || '[0, 0, 0]'));
-            words = JSON.parse(localStorage.getItem(roomCode + '_words') || '[]');
-            currentTeamIndex = parseInt(localStorage.getItem(roomCode + '_currentTeamIndex') || '0', 10);
-            timeLeft = parseInt(localStorage.getItem(roomCode + '_timeLeft') || '60', 10);
-            const currentWord = localStorage.getItem(roomCode + '_currentWord') || '';
-
-            if (teams.length > 0) {
-                document.getElementById('roomSetup').style.display = 'none';
-                document.getElementById('gameDisplay').style.display = 'block';
-                document.getElementById('timer').textContent = timeLeft;
-                document.getElementById('word').textContent = currentWord;
-                updateScoreboard();
-                if (timeLeft > 0) {
-                    startTimer();
-                } else {
-                    document.getElementById('nextRoundButton').style.display = 'block';
-                }
-            } else {
-                alert('Nu s-a găsit niciun joc activ pentru acest cod.');
-            }
-        }
-
-        function joinRoom() {
-            roomCode = document.getElementById('joinRoomCode').value.trim();
-            if (!roomCode) {
-                alert('Introduceți un cod de cameră valid.');
-                return;
-            }
-            window.location.hash = roomCode;
-            loadGameState();
-        }
-
-        window.onload = function() {
-            if (window.location.hash) {
-                roomCode = window.location.hash.substring(1);
-                loadGameState();
-            } else {
-                document.getElementById('joinSetup').style.display = 'block';
-            }
         }
     </script>
 </body>
